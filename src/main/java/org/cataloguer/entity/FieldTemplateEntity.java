@@ -3,6 +3,7 @@ package org.cataloguer.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.cataloguer.entity.converter.*;
+import org.hibernate.annotations.Type;
 
 import java.util.List;
 
@@ -23,9 +24,10 @@ public class FieldTemplateEntity {
     private String description;
 
     @Column(name = "type")
-    @Convert(converter = FieldTypeConverter.class)
+    @Type(PostgreSQLFieldType.class)
     private FieldType type;
 
+    @Transient
     @Column(name = "format")
     @Convert(converter = FieldFormatConverter.class)
     private FieldFormat format;
