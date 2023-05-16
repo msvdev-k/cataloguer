@@ -1,0 +1,579 @@
+openapi: 3.0.3
+
+info:
+  title: Каталогизатор - OpenAPI 3.0
+  version: 1.0.0
+  description: OpenAPI спецификация сервиса каталогизации оцифрованных объектов.
+  license:
+    name: GNU GPLv3
+    url: https://www.gnu.org/licenses/gpl-3.0-standalone.html
+
+servers:
+  - url: http://localhost:48884/api/v1
+
+tags:
+  - name: catalog
+    description: Управление каталогами
+  - name: field
+    description: Управление шаблонами полей
+  - name: card
+    description: Управление карточками
+  - name: user
+    description: Управление пользователями
+
+
+paths:
+  /catalog:
+    get:
+      summary: Получить список каталогов
+      tags:
+        - catalog
+      operationId: catalogList
+      parameters:
+        - $ref: '#/components/parameters/offsetParameter'
+        - $ref: '#/components/parameters/limitParameter'
+        - $ref: '#/components/parameters/sortParameter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Catalog'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+    
+    post:
+      summary: Создать новый каталог
+      tags:
+        - catalog
+      operationId: addCatalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Catalog'
+            example:
+              name: Книги
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+  /catalog/{catalogId}:
+    parameters:
+      - in: path
+        name: catalogId
+        description: Идентификатор каталога
+        required: true
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Получить описание каталога
+      tags:
+        - catalog
+      operationId: getCatalogById
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+    
+    put:
+      summary: Переименовать каталог
+      tags:
+        - catalog
+      operationId: updateCatalogById    
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Catalog'
+            example:
+              name: Книги
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Catalog'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error    
+
+    delete:
+      tags:
+        - catalog
+      summary: Удалить каталог
+      description: Удаление каталога возможно только в том случае, если
+                   он содержит не более 10 карточек. Если каталог содержит более
+                   10 карточек, то удаления каталога не произойдёт, а в качестве
+                   ответа сервера будет возвращена ошибка!
+                   
+      operationId: removeCatalogById
+      responses:
+        '204':
+          description: OK
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error    
+
+  /catalog/{catalogId}/card:
+    parameters:
+      - in: path
+        name: catalogId
+        description: Идентификатор каталога
+        required: true
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Получить список карточек
+      tags:
+        - card
+      operationId: cardList
+      parameters:
+        - $ref: '#/components/parameters/offsetParameter'
+        - $ref: '#/components/parameters/limitParameter'
+        - $ref: '#/components/parameters/sortParameter'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+    
+    post:
+      summary: Создать новую карточку
+      tags:
+        - card
+      operationId: addCard
+      responses:
+        '201':
+          description: Новая карточка создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+              example:
+                id: 1254
+                creationDate: "2023-07-21T17:32:28Z"
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error    
+
+  /catalog/{catalogId}/fieldTemplate:
+    parameters:
+      - in: path
+        name: catalogId
+        description: Идентификатор каталога
+        required: true
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Получить список шаблонов полей карточек
+      tags:
+        - field
+      operationId: fieldTemplateList
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FieldTemplate'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+    
+    post:
+      summary: Создать новый шаблон для поля карточки
+      tags:
+        - field
+      operationId: addFieldTemplate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldTemplate'
+            example:
+              name: "Год издания"
+              description: "Год издания книги"
+      responses:
+        '201':
+          description: Новый шаблон создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldTemplate'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error  
+    
+    put:
+      summary: Изменить шаблон для поля карточки
+      tags:
+        - field
+      operationId: updateFieldTemplate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldTemplate'
+      responses:
+        '201':
+          description: Шаблон изменён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldTemplate'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error  
+
+  /card/{cardId}:
+    parameters:
+      - in: path
+        name: cardId
+        description: Идентификатор карточки
+        required: true
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Получить описание карточки
+      tags:
+        - card
+      operationId: getCardById
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Card'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+    delete:
+      tags:
+        - card
+      summary: Удалить карточку
+      operationId: removeCardById
+      responses:
+        '204':
+          description: OK
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error      
+
+  /card/{cardId}/field:
+    parameters:
+      - in: path
+        name: cardId
+        description: Идентификатор карточки
+        required: true
+        schema:
+          type: integer
+          format: int64
+
+    post:
+      summary: Добавить к карточке новое поле со значением
+      tags:
+        - card
+      operationId: addFieldValueToCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldRequest'
+            example:
+              templateId: 10
+              value: "2022"
+      responses:
+        '201':
+          description: Новое поле со значением добавлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldResponse'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+    put:
+      summary: Изменить значение у поля карточки
+      tags:
+        - card
+      operationId: updateFieldValueToCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldRequest'
+      responses:
+        '200':
+          description: Значение поля изменено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldResponse'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+    delete:
+      tags:
+        - card
+      summary: Удалить поле со значенем из карточки
+      operationId: removeFieldValueFromCard
+      responses:
+        '204':
+          description: OK
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error    
+
+  /user:
+    post:
+      tags:
+        - user
+      summary: Добавить нового пользователя
+      operationId: addUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Новый пользователь добавлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+  /user/login:
+    post:
+      tags:
+        - user
+      summary: Выполнить вход от имени пользователя
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              email: "john@email.com"
+              password: "12345"
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Rate-Limit:
+              description: Разрещённое количество запросов за один час
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: Дата в UTC, когда истечет срок действия токена
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/json:
+              schema:
+                type: string
+        '4XX':
+          description: Client Error
+        '5XX':
+          description: Server Error
+
+  /user/logout:
+    post:
+      tags:
+        - user
+      summary: Выход из текущего сеанса пользователя, вошедшего в систему
+      operationId: logoutUser
+      responses:
+        '200':
+          description: OK
+
+
+components:
+  parameters:
+    offsetParameter:
+      in: query
+      name: offset
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Количество элементов, которое необходимо пропустить перед возвращением результирующего набора.
+    
+    limitParameter:
+      in: query
+      name: limit
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+      description: Максимальное количество элементов, которое необходимо возвратить.
+
+    sortParameter:
+      in: query
+      name: sort
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+        example: asc
+      description: Порядок сортировки.
+
+  schemas:
+    Catalog:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+        name:
+          type: string
+          description: Название каталога
+          example: Книги
+
+    FieldTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        name:
+          type: string
+          description: Название поля
+          example: Год издания
+        description:
+          type: string
+          description: Описание поля
+          example: Год издания книги
+
+    FieldResponse:
+      type: object
+      properties:
+        template:
+          $ref: '#/components/schemas/FieldTemplate'
+        value:
+          type: string
+          description: Значение, принадлежащее полю
+          example: '2022'
+
+    FieldRequest:
+      type: object
+      properties:
+        templateId:
+          type: integer
+          format: int64
+          example: 10
+        value:
+          type: string
+          description: Значение, принадлежащее полю
+          example: '2022'
+        oldValue:
+          type: string
+          description: Предыдущее значение, принадлежащее полю
+          example: '2020'
+
+    Card:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        creationDate:
+          type: string
+          format: date-time
+          example: '2023-07-21T17:32:28Z'
+          description: Дата создания карточки
+        fields:
+          type: array
+          description: Список полей карточки
+          items:
+            $ref: '#/components/schemas/FieldResponse'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
